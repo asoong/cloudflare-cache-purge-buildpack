@@ -2,8 +2,7 @@
 
 # This buildpack will purge your app's Cloudflare cache given the following environment variables:
 # CF_ZONE_ID
-# CF_AUTH_KEY
-# CF_EMAIL
+# CF_AUTH_TOKEN
 # API used: https://api.cloudflare.com/#zone-purge-all-files
 
 
@@ -21,16 +20,15 @@ fi
 purgeCache() {
   local result=$(curl -L --write-out %{http_code} --silent --output /dev/null \
     -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
-		-H "X-Auth-Email: ${CF_EMAIL}" \
-    -H "X-Auth-Key: ${CF_AUTH_KEY}" \
-		-H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${CF_AUTH_TOKEN}" \
+    -H "Content-Type: application/json" \
     --data '{"purge_everything":true}')
   echo "$result"
 }
 
-if [ -z ${CF_AUTH_KEY+x} ]; then
+if [ -z ${CF_AUTH_TOKEN+x} ]; then
   echo "-----> Not purging Cloudflare cache"
-  echo "       Set CF_ZONE_ID, CF_AUTH_KEY & CF_EMAIL"
+  echo "       Set CF_ZONE_ID, CF_AUTH_TOKEN"
 else
   echo "-----> Purging Cloudflare cache"
 
